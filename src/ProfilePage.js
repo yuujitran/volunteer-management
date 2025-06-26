@@ -1,0 +1,104 @@
+import React, { useState } from 'react';
+
+function ProfilePage() {
+  const [form, setForm] = useState({
+    fullName: '',
+    address1: '',
+    address2: '',
+    city: '',
+    state: '',
+    zip: '',
+    skills: [],
+    preferences: '',
+    availability: []
+  });
+
+  const states = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'TX']; // sample states
+  const skillsOptions = ['Cooking', 'Tutoring', 'Driving', 'Event Setup'];
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+  };
+
+  const handleMultiSelect = (e) => {
+    const selected = Array.from(e.target.selectedOptions).map((option) => option.value);
+    setForm({ ...form, skills: selected });
+  };
+
+  const handleAvailability = (e) => {
+    const selected = e.target.value.split(',').map((d) => d.trim());
+    setForm({ ...form, availability: selected });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Submitted Profile:', form);
+    alert('Profile submitted (for now it just logs to console)');
+  };
+
+  return (
+    <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
+      <h1>User Profile</h1>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Full Name:</label><br />
+          <input name="fullName" maxLength="50" required onChange={handleChange} />
+        </div><br />
+
+        <div>
+          <label>Address 1:</label><br />
+          <input name="address1" maxLength="100" required onChange={handleChange} />
+        </div><br />
+
+        <div>
+          <label>Address 2 (optional):</label><br />
+          <input name="address2" maxLength="100" onChange={handleChange} />
+        </div><br />
+
+        <div>
+          <label>City:</label><br />
+          <input name="city" maxLength="100" required onChange={handleChange} />
+        </div><br />
+
+        <div>
+          <label>State:</label><br />
+          <select name="state" required onChange={handleChange}>
+            <option value="">Select a state</option>
+            {states.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </div><br />
+
+        <div>
+          <label>Zip Code:</label><br />
+          <input name="zip" maxLength="9" pattern="\d{5,9}" required onChange={handleChange} />
+        </div><br />
+
+        <div>
+          <label>Skills:</label><br />
+          <select multiple required onChange={handleMultiSelect}>
+            {skillsOptions.map((skill) => (
+              <option key={skill} value={skill}>{skill}</option>
+            ))}
+          </select>
+        </div><br />
+
+        <div>
+          <label>Preferences (optional):</label><br />
+          <textarea name="preferences" rows="4" cols="40" onChange={handleChange}></textarea>
+        </div><br />
+
+        <div>
+          <label>Availability (enter multiple dates, comma-separated):</label><br />
+          <input name="availability" required placeholder="MM/DD/YYYY, MM/DD/YYYY" onChange={handleAvailability} />
+        </div><br />
+
+        <button type="submit">Save Profile</button>
+      </form>
+    </div>
+  );
+}
+
+export default ProfilePage;
