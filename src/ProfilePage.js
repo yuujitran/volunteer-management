@@ -96,11 +96,6 @@ function ProfilePage() {
           <textarea name="preferences" rows="4" cols="40" onChange={handleChange}></textarea>
         </div><br />
 
-        {/* <div>
-          <label>Availability (enter multiple dates, comma-separated):</label><br />
-          <input name="availability" required placeholder="MM/DD/YYYY, MM/DD/YYYY" onChange={handleAvailability} />
-        </div><br /> */}
-
         <div>
             <label>Pick a date you're available:</label><br />
             <input
