@@ -13,7 +13,14 @@ function ProfilePage() {
     availability: []
   });
 
-  const states = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'TX']; // sample states
+  const states = [
+  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+  'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+  'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+  'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+];
+
   const skillsOptions = ['Cooking', 'Tutoring', 'Driving', 'Event Setup'];
 
   const handleChange = (e) => {
@@ -34,7 +41,6 @@ function ProfilePage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Submitted Profile:', form);
-    alert('Profile submitted (for now it just logs to console)');
   };
 
   return (
@@ -90,10 +96,46 @@ function ProfilePage() {
           <textarea name="preferences" rows="4" cols="40" onChange={handleChange}></textarea>
         </div><br />
 
-        <div>
+        {/* <div>
           <label>Availability (enter multiple dates, comma-separated):</label><br />
           <input name="availability" required placeholder="MM/DD/YYYY, MM/DD/YYYY" onChange={handleAvailability} />
-        </div><br />
+        </div><br /> */}
+
+        <div>
+            <label>Pick a date you're available:</label><br />
+            <input
+                type="date"
+                value={form.currentDate || ''}
+                onChange={(e) => setForm({ ...form, currentDate: e.target.value })}
+            />
+            <br /><br />
+            <button
+                type="button"
+                onClick={() => {
+                if (form.currentDate && !form.availability.includes(form.currentDate)) {
+                    setForm({
+                    ...form,
+                    availability: [...form.availability, form.currentDate],
+                    currentDate: ''
+                    });
+                }
+                }}
+            >
+                Add Date
+            </button>
+        </div>
+
+        <br />
+
+        <div>
+            <label>Dates you've selected:</label>
+            <ul>
+                {form.availability.map((date, index) => (
+                <li key={index}>{date}</li>
+                ))}
+            </ul>
+        </div>
+
 
         <button type="submit">Save Profile</button>
       </form>
