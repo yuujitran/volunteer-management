@@ -20,6 +20,7 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/events/manage" element={<EventManagementPage />} />
       </Routes>
+      </div>
     </Router>
   );
 }
