@@ -6,7 +6,7 @@ import RegisterPage from './RegisterPage';
 import ProfilePage from './ProfilePage';
 import EventManagementPage from './EventManagementPage';
 import NotificationBanner from './NotificationBanner';
-
+import VolunteerHistoryPage from './VolunteerHistoryPage';
 
 function App() {
   return (
@@ -18,7 +18,8 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/events/manage" element={<EventManagementPage />} />
+        <Route path="/events" element={<EventManagementPage />} />
+        <Route path="/volunteerhistory"element={<VolunteerHistoryPage />}/>
       </Routes>
       </div>
     </Router>
