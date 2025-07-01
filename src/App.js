@@ -19,7 +19,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/events" element={<EventManagementPage />} />
-        <Route path="/volunteerhistory"element={<VolunteerHistoryPage />}/>
+        <Route path="/volunteerhistory" element={<VolunteerHistoryPage />}/>
       </Routes>
       </div>
     </Router>
