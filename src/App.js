@@ -7,6 +7,7 @@ import ProfilePage from './ProfilePage';
 import EventManagementPage from './EventManagementPage';
 import NotificationBanner from './NotificationBanner';
 import VolunteerHistoryPage from './VolunteerHistoryPage';
+import VolunteerMatchingForm from './VolunteerMatchingForm';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/events" element={<EventManagementPage />} />
         <Route path="/volunteerhistory" element={<VolunteerHistoryPage />}/>
+        <Route path="/volunteer-match" element={<VolunteerMatchingForm />} />
       </Routes>
       </div>
     </Router>
