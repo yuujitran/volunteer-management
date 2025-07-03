@@ -9,7 +9,7 @@ const Volunteers = [
   },
   {
     id: 2,
-    name: 'Daniel',
+    name: 'Chris',
     skills: ['Tutoring', 'Event Setup'],
     availability: ['2025-07-10']
   }
