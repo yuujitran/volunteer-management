@@ -1,5 +1,4 @@
 import React from 'react';
-
 const NotificationBanner = () => {
   const notifications = [
     "📢 You have been assigned to the 'Health Camp' event.",
@@ -14,8 +13,7 @@ const NotificationBanner = () => {
       color: '#856404',
       border: '1px solid #ffeeba',
       padding: '1rem',
-      borderRadius: '8px',
-      marginBottom: '1rem'
+      borderRadius: '0 0 0 8px'
     }}>
       <strong>🔔 Notifications:</strong>
       <ul style={{ paddingLeft: '1.5rem', marginTop: '0.5rem' }}>
@@ -23,7 +21,9 @@ const NotificationBanner = () => {
           <li key={index}>{note}</li>
         ))}
       </ul>
+      <div style={{ color:'red', fontWeight:'bold'}}>TEST BANNER: WILL ONLY APPEAR WITH ACTUAL NOTIFICATIONS</div>
     </div>
+    
   );
 };
 
