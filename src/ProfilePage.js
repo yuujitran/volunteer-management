@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 function ProfilePage() {
   const [form, setForm] = useState({
@@ -38,10 +39,18 @@ function ProfilePage() {
     setForm({ ...form, availability: selected });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Submitted Profile:', form);
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  console.log('Profile data submitted:', form);
+
+  if (!form.fullName || !form.address1 || !form.city || !form.state || !form.zip || form.skills.length === 0) {
+    alert('Please complete all required fields.');
+    return;
+  }
+
+  alert('Profile saved successfully (simulated)');
+};
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
