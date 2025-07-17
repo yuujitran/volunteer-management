@@ -10,6 +10,9 @@ const volunteers = [];
 const profiles = [];
 let nextVolunteerId = 1;
 
+const eventRoutes = require('./routes/eventRoutes');
+app.use('/events', eventRoutes);
+
 //testing route
 app.get('/', (req, res) => {
   res.send('API works');

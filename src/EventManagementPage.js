@@ -25,9 +25,38 @@ export default function EventManagementPage() {
     setForm(f => ({ ...f, requiredSkills: values }));
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    // …
+
+    // Map frontend form to backend fields
+    const eventData = {
+      name: form.eventName,
+      details: form.eventDescription,
+      location: form.location,
+      requiredSkills: form.requiredSkills,
+      urgency: form.urgency.toLowerCase(), // backend expects 'low', 'medium', 'high'
+      // eventDate: form.eventDate, // not used in backend yet
+    };
+
+    try {
+      const res = await fetch('http://localhost:5000/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(eventData),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        alert('Error: ' + error.message);
+        return;
+      }
+
+      const data = await res.json();
+      alert('Event created: ' + data.name);
+      // Optionally reset form or update event list here
+    } catch (err) {
+      alert('Network error: ' + err.message);
+    }
   };
 
   return (
