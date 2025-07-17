@@ -13,6 +13,9 @@ let nextVolunteerId = 1;
 const eventRoutes = require('./routes/eventRoutes');
 app.use('/events', eventRoutes);
 
+const historyRoutes = require('./routes/historyRoutes');
+app.use('/history', historyRoutes);
+
 //testing route
 app.get('/', (req, res) => {
   res.send('API works');
