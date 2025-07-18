@@ -16,6 +16,12 @@ app.use('/events', eventRoutes);
 const historyRoutes = require('./routes/historyRoutes');
 app.use('/history', historyRoutes);
 
+const notificationRoutes = require('./routes/notificationRoutes');
+app.use('/notifications', notificationRoutes);
+
+const matchingRoutes = require('./routes/matchingRoutes');
+app.use('/match', matchingRoutes);
+
 //testing route
 app.get('/', (req, res) => {
   res.send('API works');
