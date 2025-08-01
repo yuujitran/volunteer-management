@@ -28,6 +28,30 @@ CREATE TABLE UserProfile (
   FOREIGN KEY (user_id) REFERENCES UserCredentials(id)
 );
 
+-- EventDetails table
+CREATE TABLE IF NOT EXISTS EventDetails (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  description TEXT,
+  location VARCHAR(100) NOT NULL,
+  required_skills VARCHAR(255),
+  urgency TINYINT NOT NULL CHECK (urgency BETWEEN 1 AND 5),
+  event_date DATE NOT NULL,
+  stateCode CHAR(2),
+  FOREIGN KEY (stateCode) REFERENCES States(code)
+);
+
+-- VolunteerHistory table
+CREATE TABLE IF NOT EXISTS VolunteerHistory (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  volunteer_id INT NOT NULL,
+  event_id INT NOT NULL,
+  participation_date DATE NOT NULL,
+  role VARCHAR(50),
+  hours DECIMAL(5,2) NOT NULL CHECK (hours >= 0),
+  FOREIGN KEY (event_id) REFERENCES EventDetails(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS States (
   code CHAR(2) PRIMARY KEY,
   name VARCHAR(100) NOT NULL
@@ -87,3 +111,4 @@ INSERT INTO States (code, name) VALUES
 
 SELECT * FROM UserCredentials;
 SELECT * FROM UserProfile;
+
