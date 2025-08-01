@@ -14,6 +14,19 @@ describe('Event Management API', () => {
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBeGreaterThan(0);
     });
+
+    it('should filter events by required skill', async () => {
+      const res = await request(app).get('/events').query({ skill: 'organization' });
+      expect(res.statusCode).toBe(200);
+      expect(res.body.length).toBe(1);
+      expect(res.body[0].requiredSkills).toContain('organization');
+    });
+
+    it('should filter events by urgency', async () => {
+      const res = await request(app).get('/events').query({ urgency: 'high' });
+      expect(res.statusCode).toBe(200);
+      expect(res.body.every(e => e.urgency === 'high')).toBe(true);
+    });
   });
 
   describe('POST /events', () => {
@@ -94,4 +107,6 @@ describe('Event Management API', () => {
       expect(res.statusCode).toBe(404);
     });
   });
-}); 
+
+});
+
