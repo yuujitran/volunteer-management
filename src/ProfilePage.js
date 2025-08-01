@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useLocation } from 'react-router-dom';
 
 function ProfilePage() {
+  const location = useLocation();
+  const email = location.state?.email;
+
   const [form, setForm] = useState({
     fullName: '',
     address1: '',
@@ -11,46 +15,65 @@ function ProfilePage() {
     zip: '',
     skills: [],
     preferences: '',
-    availability: []
+    availability: [],
+    currentDate: ''
   });
 
   const states = [
-  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
-  'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
-  'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-  'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
-  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
-];
-
+    'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD',
+    'MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC',
+    'SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'
+  ];
   const skillsOptions = ['Cooking', 'Tutoring', 'Driving', 'Event Setup'];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleMultiSelect = (e) => {
-    const selected = Array.from(e.target.selectedOptions).map((option) => option.value);
-    setForm({ ...form, skills: selected });
+    const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
+    setForm(prev => ({ ...prev, skills: selected }));
   };
 
-  const handleAvailability = (e) => {
-    const selected = e.target.value.split(',').map((d) => d.trim());
-    setForm({ ...form, availability: selected });
+  const handleAddDate = () => {
+    if (form.currentDate && !form.availability.includes(form.currentDate)) {
+      setForm(prev => ({
+        ...prev,
+        availability: [...prev.availability, prev.currentDate],
+        currentDate: ''
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  console.log('Profile data submitted:', form);
+    if (!email || !form.fullName || !form.address1 || !form.city || !form.state || !form.zip || form.skills.length === 0) {
+      alert('Please complete all required fields.');
+      return;
+    }
 
-  if (!form.fullName || !form.address1 || !form.city || !form.state || !form.zip || form.skills.length === 0) {
-    alert('Please complete all required fields.');
-    return;
-  }
+    try {
+      const res = await axios.post('http://localhost:5000/profile', {
+        email,
+        fullName: form.fullName,
+        address1: form.address1,
+        address2: form.address2,
+        city: form.city,
+        state: form.state,
+        zip: form.zip,
+        skills: form.skills,
+        preferences: form.preferences,
+        availability: form.availability
+      });
 
-  alert('Profile saved successfully (simulated)');
-};
+      alert(res.data.message);
+    } catch (err) {
+      console.error('Failed to save profile:', err);
+      alert('Failed to save profile');
+    }
+  };
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
@@ -88,7 +111,7 @@ function ProfilePage() {
 
         <div>
           <label>Zip Code:</label><br />
-          <input name="zip" maxLength="9" pattern="\d{5,9}" required onChange={handleChange} />
+          <input name="zip" pattern="\d{5,9}" required onChange={handleChange} />
         </div><br />
 
         <div>
@@ -106,40 +129,23 @@ function ProfilePage() {
         </div><br />
 
         <div>
-            <label>Pick a date you're available:</label><br />
-            <input
-                type="date"
-                value={form.currentDate || ''}
-                onChange={(e) => setForm({ ...form, currentDate: e.target.value })}
-            />
-            <br /><br />
-            <button
-                type="button"
-                onClick={() => {
-                if (form.currentDate && !form.availability.includes(form.currentDate)) {
-                    setForm({
-                    ...form,
-                    availability: [...form.availability, form.currentDate],
-                    currentDate: ''
-                    });
-                }
-                }}
-            >
-                Add Date
-            </button>
-        </div>
-
-        <br />
+          <label>Pick a date you're available:</label><br />
+          <input
+            type="date"
+            value={form.currentDate}
+            onChange={(e) => setForm({ ...form, currentDate: e.target.value })}
+          />
+          <button type="button" onClick={handleAddDate}>Add Date</button>
+        </div><br />
 
         <div>
-            <label>Dates you've selected:</label>
-            <ul>
-                {form.availability.map((date, index) => (
-                <li key={index}>{date}</li>
-                ))}
-            </ul>
+          <label>Availability Dates:</label>
+          <ul>
+            {form.availability.map((date, idx) => (
+              <li key={idx}>{date}</li>
+            ))}
+          </ul>
         </div>
-
 
         <button type="submit">Save Profile</button>
       </form>
