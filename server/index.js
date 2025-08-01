@@ -2,13 +2,14 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const bcrypt = require('bcrypt');
+const mysql = require('mysql2');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const bcrypt = require('bcrypt');
-const mysql = require('mysql2');
-
+// MySQL connection
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -18,30 +19,46 @@ const db = mysql.createConnection({
 });
 
 db.connect((err) => {
-  console.log('Connected to MySQL');
+  if (err) {
+    console.error('Failed to connect to MySQL:', err.message);
+  } else {
+    console.log('Connected to MySQL');
+  }
 });
 
+// Export db so routes can import it
+module.exports.db = db;
 
+/* ------------------ ROUTES ------------------ */
+
+// Events
 const eventRoutes = require('./routes/eventRoutes');
 app.use('/events', eventRoutes);
 
+// Volunteer History
 const historyRoutes = require('./routes/historyRoutes');
 app.use('/history', historyRoutes);
 
+// Notifications
 const notificationRoutes = require('./routes/notificationRoutes');
 app.use('/notifications', notificationRoutes);
 
+// Matching
 const matchingRoutes = require('./routes/matchingRoutes');
 app.use('/match', matchingRoutes);
 
+// States
 const statesRoutes = require('./routes/statesRoutes');
 app.use('/states', statesRoutes);
-//testing route
+
+// Test route
 app.get('/', (req, res) => {
   res.send('API works');
 });
 
-//register volunteer
+/* ------------------ VOLUNTEER AUTH & PROFILE ------------------ */
+
+// Register volunteer
 app.post('/volunteers', async (req, res) => {
   const { email, password, role } = req.body;
 
@@ -52,12 +69,14 @@ app.post('/volunteers', async (req, res) => {
   if (!/^\S+@\S+\.\S+$/.test(email)) {
     return res.status(400).json({ message: 'Invalid email format.' });
   }
+
   if (password.length < 6) {
     return res.status(400).json({ message: 'Password must be at least 6 characters.' });
   }
 
   const checkQuery = 'SELECT * FROM UserCredentials WHERE email = ?';
   db.query(checkQuery, [email], async (err, results) => {
+    if (err) return res.status(500).json({ message: 'Database error' });
 
     if (results.length > 0) {
       return res.status(409).json({ message: 'Email already registered' });
@@ -66,13 +85,13 @@ app.post('/volunteers', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const insertQuery = 'INSERT INTO UserCredentials (email, password_hash, role) VALUES (?, ?, ?)';
     db.query(insertQuery, [email, hashedPassword, role], (err, result) => {
+      if (err) return res.status(500).json({ message: 'Failed to register volunteer' });
       res.status(201).json({ message: 'Volunteer registered successfully', userId: result.insertId });
     });
   });
 });
 
-
-//get volunteer ID by email
+// Get volunteer ID by email
 app.get('/volunteer-id', (req, res) => {
   const { email } = req.query;
   if (!email) return res.status(400).json({ message: 'Email is required' });
@@ -86,7 +105,7 @@ app.get('/volunteer-id', (req, res) => {
   });
 });
 
-//save profile
+// Save profile
 app.post('/profile', (req, res) => {
   const {
     email,
@@ -111,6 +130,9 @@ app.post('/profile', (req, res) => {
 
   const getUserIdQuery = 'SELECT id FROM UserCredentials WHERE email = ?';
   db.query(getUserIdQuery, [email], (err, results) => {
+    if (err) return res.status(500).json({ message: 'Database error' });
+    if (results.length === 0) return res.status(404).json({ message: 'Volunteer not found' });
+
     const userId = results[0].id;
     const insertProfileQuery = `
       INSERT INTO UserProfile 
@@ -140,7 +162,7 @@ app.post('/profile', (req, res) => {
   });
 });
 
-
+/* ------------------ START SERVER ------------------ */
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
