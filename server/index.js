@@ -34,6 +34,8 @@ app.use('/notifications', notificationRoutes);
 const matchingRoutes = require('./routes/matchingRoutes');
 app.use('/match', matchingRoutes);
 
+const statesRoutes = require('./routes/statesRoutes');
+app.use('/states', statesRoutes);
 //testing route
 app.get('/', (req, res) => {
   res.send('API works');
