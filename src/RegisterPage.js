@@ -1,6 +1,7 @@
 //import React from 'react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function RegisterPage() {
   const [form, setForm] = useState({
@@ -10,19 +11,16 @@ function RegisterPage() {
   role: ''
 });
 
-//fake user for now, no DB
-const [registeredUsers, setRegisteredUsers] = useState([
-    { email: 'admin@example.com', password: 'admin123', role: 'admin' }
-]);
-
+const [error, setError] = useState('');
 const navigate = useNavigate();
 
 const handleChange = (e) => {
   setForm({ ...form, [e.target.name]: e.target.value });
 };
 
-const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
 
     if (!form.email || !form.password || !form.confirmPassword || !form.role) {
       alert("Please fill in all fields.");
@@ -34,25 +32,19 @@ const handleSubmit = (e) => {
       return;
     }
 
-    const existingUser = registeredUsers.find(user => user.email === form.email);
-    if (existingUser) {
-      alert("Email is already registered.");
-      return;
+    try {
+      const res = await axios.post('http://localhost:5000/volunteers', {
+        email: form.email,
+        password: form.password,
+        role: form.role
+      });
+
+      alert(res.data.message);
+      navigate('/profile', { state: { email: form.email } }); // pass email to ProfilePage
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError(err.response?.data?.message || 'Registration failed.');
     }
-
-    //saves fake user
-    const newUser = {
-      email: form.email,
-      password: form.password,
-      role: form.role
-    };
-
-    setRegisteredUsers([...registeredUsers, newUser]);
-
-    alert("Registration successful (simulated)");
-
-    //redirects to profile page after registering
-    navigate('/profile', { state: { email: form.email } });
   };
 
 
