@@ -14,9 +14,23 @@ let events = [
   }
 ];
 
-// GET all events
+// GET all events or filter by skill/urgency
 router.get('/', (req, res) => {
-  res.json(events);
+  const { skill, urgency } = req.query;
+  let filteredEvents = events;
+
+  if (skill) {
+    const skillLower = skill.toLowerCase();
+    filteredEvents = filteredEvents.filter(e =>
+      e.requiredSkills.some(s => s.toLowerCase() === skillLower)
+    );
+  }
+
+  if (urgency) {
+    filteredEvents = filteredEvents.filter(e => e.urgency === urgency);
+  }
+
+  res.json(filteredEvents);
 });
 
 // GET event by ID
@@ -58,4 +72,5 @@ router.delete('/:id', (req, res) => {
   res.status(204).send();
 });
 
-module.exports = router; 
+
+module.exports = router;
