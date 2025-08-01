@@ -26,6 +26,12 @@ function ProfilePage() {
   ];
   const skillsOptions = ['Cooking', 'Tutoring', 'Driving', 'Event Setup'];
 
+  useEffect(() => {
+    axios.get('http://localhost:5000/states')
+      .then(res => setStatesList(res.data))
+      .catch(err => console.error('Failed to fetch states:', err));
+  }, []);
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
