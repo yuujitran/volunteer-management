@@ -1,24 +1,23 @@
-//import React from 'react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function RegisterPage() {
   const [form, setForm] = useState({
-  email: '',
-  password: '',
-  confirmPassword: '',
-  role: ''
-});
+    email: '',
+    password: '',
+    confirmPassword: '',
+    role: ''
+  });
 
-const [error, setError] = useState('');
-const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-const handleChange = (e) => {
-  setForm({ ...form, [e.target.name]: e.target.value });
-};
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -40,13 +39,16 @@ const handleSubmit = async (e) => {
       });
 
       alert(res.data.message);
-      navigate('/profile', { state: { email: form.email } }); // pass email to ProfilePage
+      navigate('/', { state: { email: form.email } }); // Redirect to homepage
     } catch (err) {
       console.error('Registration error:', err);
-      setError(err.response?.data?.message || 'Registration failed.');
+      setError(
+        err.response?.status === 409
+          ? 'That email is already registered. Try logging in instead.'
+          : err.response?.data?.message || 'Registration failed.'
+      );
     }
   };
-
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
@@ -99,6 +101,7 @@ const handleSubmit = async (e) => {
           </select>
         </div>
         <br />
+        {error && <p style={{ color: 'red' }}>{error}</p>}
         <button type="submit">Register</button>
       </form>
     </div>

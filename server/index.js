@@ -162,6 +162,44 @@ app.post('/profile', (req, res) => {
   });
 });
 
+// login route
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+
+  const query = 'SELECT * FROM UserCredentials WHERE email = ?';
+  db.query(query, [email], async (err, results) => {
+
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ message: 'Database error' });
+    }
+
+    if (results.length === 0) {
+      return res.status(401).json({ message: 'Email address not registered' });
+    }
+
+    const user = results[0];
+
+    try {
+      const match = await bcrypt.compare(password, user.password_hash);
+
+      if (!match) {
+        return res.status(401).json({ message: 'Incorrect password' });
+      }
+
+      res.json({
+        message: 'Login successful',
+        email: user.email,
+        role: user.role
+      });
+    } catch (error) {
+      console.error('Bcrypt compare failed:', error);
+      res.status(500).json({ message: 'Incorrect password' });
+    }
+  });
+});
+
+
 /* ------------------ START SERVER ------------------ */
 const PORT = 5000;
 app.listen(PORT, () => {

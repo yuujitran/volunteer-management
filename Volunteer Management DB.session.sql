@@ -1,5 +1,5 @@
-CREATE DATABASE VolunteerManagementDB;
-USE VolunteerManagementDB;
+-- CREATE DATABASE VolunteerManagementDB;
+USE volunteer_management;
 
 DROP TABLE IF EXISTS UserProfile;
 DROP TABLE IF EXISTS UserCredentials;
