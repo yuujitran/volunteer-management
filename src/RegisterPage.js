@@ -39,7 +39,7 @@ function RegisterPage() {
       });
 
       alert(res.data.message);
-      navigate('/', { state: { email: form.email } }); // Redirect to homepage
+      navigate('/', { state: { email: form.email } });
     } catch (err) {
       console.error('Registration error:', err);
       setError(
