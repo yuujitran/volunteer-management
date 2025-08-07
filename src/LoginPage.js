@@ -1,6 +1,7 @@
 //import React from 'react';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function LoginPage({ setIsLoggedIn }) {
   const navigate = useNavigate();
@@ -13,30 +14,26 @@ function LoginPage({ setIsLoggedIn }) {
 
   const [error, setError] = useState('');
 
-  //fake registered users for now
-  const registeredUsers = [
-    { email: 'admin@example.com', password: 'admin123', role: 'admin' },
-    { email: 'volunteer@example.com', password: 'vol123', role: 'volunteer' }
-  ];
-
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
 
-    //check if uer exists in the fake list
-    const user = registeredUsers.find(
-      (u) => u.email === form.email && u.password === form.password
-    );
+    try {
+      const res = await axios.post('http://localhost:5000/login', {
+        email: form.email,
+        password: form.password
+      });
 
-    if (user) {
-      //routes to event page after login
+      alert(res.data.message); // Login successful
       setIsLoggedIn(true);
-      navigate('/events', { state: { email: user.email } });
-    } else {
-      setError('Invalid email or password');
+      navigate('/profile', { state: { email: res.data.email } });
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.response?.data?.message || 'Login failed');
     }
   };
 

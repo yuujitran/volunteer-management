@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 function ProfilePage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const email = location.state?.email;
 
   const [form, setForm] = useState({
@@ -75,6 +76,7 @@ function ProfilePage() {
       });
 
       alert(res.data.message);
+      navigate('/');
     } catch (err) {
       console.error('Failed to save profile:', err);
       alert('Failed to save profile');

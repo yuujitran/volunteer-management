@@ -40,10 +40,11 @@ const handleSubmit = async (e) => {
       });
 
       alert(res.data.message);
-      navigate('/profile', { state: { email: form.email } }); // pass email to ProfilePage
+      navigate('/', { state: { email: form.email } });
     } catch (err) {
       console.error('Registration error:', err);
-      setError(err.response?.data?.message || 'Registration failed.');
+      setError(err.response?.status === 409 ? 'That email is already registered. Try logging in instead.' : err.response?.data?.message || 'Registration failed.'
+      );
     }
   };
 
@@ -99,6 +100,9 @@ const handleSubmit = async (e) => {
           </select>
         </div>
         <br />
+
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+
         <button type="submit">Register</button>
       </form>
     </div>
