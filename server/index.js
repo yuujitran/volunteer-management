@@ -60,6 +60,11 @@ app.get('/', (req, res) => {
   res.send('API works');
 });
 
+// Volunteer Routes
+const volunteerRoutes = require('./routes/volunteerRoutes');
+app.use('/', volunteerRoutes);
+
+
 /* ------------------ VOLUNTEER AUTH & PROFILE ------------------ */
 
 // Register volunteer

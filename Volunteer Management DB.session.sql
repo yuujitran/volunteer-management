@@ -111,5 +111,3 @@ INSERT INTO States (code, name) VALUES
 
 SELECT * FROM UserCredentials;
 SELECT * FROM UserProfile;
-
-DESCRIBE UserCredentials;
