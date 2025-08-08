@@ -1,11 +1,23 @@
 // src/EventManagementPage.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './EventManagementFormLayout.css';
+import { useNavigate } from 'react-router-dom';
+
 
 const skillsOptions = [ 'Cooking','Tutoring','Driving','Event Setup' ];
 const urgencyOptions = [ 'Low','Medium','High' ];
 
 export default function EventManagementPage() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const role = localStorage.getItem('userRole');
+    if (role !== 'admin') {
+      alert('Access denied: Adminstrators only');
+      navigate('/profile');
+    }
+  }, [navigate]);
+
   const [form, setForm] = useState({
     eventName: '',
     eventDescription: '',

@@ -29,7 +29,11 @@ function LoginPage({ setIsLoggedIn }) {
         password: form.password
       });
 
-      alert(res.data.message); // Login successful
+      alert(res.data.message);
+
+      localStorage.setItem('userEmail', res.data.email);
+      localStorage.setItem('userRole', res.data.role);
+      
       setIsLoggedIn(true);
       navigate('/profile', { state: { email: res.data.email } });
     } catch (err) {
