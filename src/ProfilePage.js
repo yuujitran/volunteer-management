@@ -16,8 +16,6 @@ function ProfilePage() {
     }
   }, [email]);
 
-  const API_BASE = 'http://localhost:5000';
-
   const [form, setForm] = useState({
     fullName: '',
     address1: '',
@@ -32,6 +30,7 @@ function ProfilePage() {
   });
 
   const skillsOptions = ['Cooking', 'Tutoring', 'Driving', 'Event Setup'];
+  const [customSkill, setCustomSkill] = useState('');
   const [statesList, setStatesList] = useState([]);
   
   useEffect(() => {
@@ -80,6 +79,19 @@ function ProfilePage() {
     setForm(prev => ({ ...prev, skills: selected }));
   };
 
+  const handleSkillSelect = (e) => {
+    const selectedSkill = e.target.value;
+    setForm(prev => ({ ...prev, skills: selectedSkill ? [selectedSkill] : [] }));
+  };
+
+  const handleAddSkill = () => {
+    const trimmed = customSkill.trim();
+    if (trimmed) {
+      setForm(prev => ({ ...prev, skills: [trimmed] }));
+      setCustomSkill('');
+    }
+  };
+
   const handleAddDate = () => {
     if (form.currentDate && !form.availability.includes(form.currentDate)) {
       setForm(prev => ({
@@ -96,11 +108,6 @@ function ProfilePage() {
     if (!email || !form.fullName || !form.address1 || !form.city || !form.state || !form.zip) {
       alert('Please complete all required fields.');
       return;
-    }
-    
-    if (userRole === 'volunteer' && (form.skills.length === 0 || form.availability.length === 0)) {
-      alert('Please complete all required fields (Skills and Availability).');
-    return;
     }
 
     if (userRole === 'volunteer' && (form.skills.length === 0 || form.availability.length === 0)) {
@@ -178,11 +185,24 @@ function ProfilePage() {
           <>
             <div>
               <label>Skills:</label><br />
-              <select multiple required value={form.skills} onChange={handleMultiSelect}>
-                {skillsOptions.map((skill) => (
+              <select
+                required
+                value={form.skills[0] || ''}
+                onChange={handleSkillSelect}
+              >
+                <option value="">Select a skill</option>
+                {[...skillsOptions, ...form.skills.filter(s => !skillsOptions.includes(s))].map(skill => (
                   <option key={skill} value={skill}>{skill}</option>
                 ))}
-              </select>
+              </select><br /><br />
+
+              <input
+                type="text"
+                placeholder="Add custom skill"
+                value={customSkill}
+                onChange={(e) => setCustomSkill(e.target.value)}
+              />
+              <button type="button" onClick={handleAddSkill}>Add Skill</button>
             </div><br />
 
             <div>
