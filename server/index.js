@@ -31,6 +31,10 @@ module.exports.db = db;
 
 /* ------------------ ROUTES ------------------ */
 
+// Profile
+const profileRoutes = require('./routes/profileRoutes');
+app.use('/profile', profileRoutes);
+
 // Events
 const eventRoutes = require('./routes/eventRoutes');
 app.use('/events', eventRoutes);
@@ -102,63 +106,6 @@ app.get('/volunteer-id', (req, res) => {
     if (results.length === 0) return res.status(404).json({ message: 'Volunteer not found' });
 
     res.json({ volunteerId: results[0].id });
-  });
-});
-
-// Save profile
-app.post('/profile', (req, res) => {
-  const {
-    email,
-    fullName,
-    address1,
-    address2,
-    city,
-    state,
-    zip,
-    skills,
-    preferences,
-    availability
-  } = req.body;
-
-  if (!email || !fullName || !address1 || !city || !state || !zip || !skills || !availability) {
-    return res.status(400).json({ message: 'Missing required fields' });
-  }
-
-  if (!/^\d{5,9}$/.test(zip)) {
-    return res.status(400).json({ message: 'Zip must be 5–9 digits.' });
-  }
-
-  const getUserIdQuery = 'SELECT id FROM UserCredentials WHERE email = ?';
-  db.query(getUserIdQuery, [email], (err, results) => {
-    if (err) return res.status(500).json({ message: 'Database error' });
-    if (results.length === 0) return res.status(404).json({ message: 'Volunteer not found' });
-
-    const userId = results[0].id;
-    const insertProfileQuery = `
-      INSERT INTO UserProfile 
-      (user_id, full_name, address1, address2, city, state, zip, skills, preferences, availability)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    const values = [
-      userId,
-      fullName,
-      address1,
-      address2,
-      city,
-      state,
-      zip,
-      Array.isArray(skills) ? skills.join(',') : skills,
-      preferences,
-      Array.isArray(availability) ? availability.join(',') : availability
-    ];
-
-    db.query(insertProfileQuery, values, (err) => {
-      if (err) {
-        return res.status(500).json({ message: 'Failed to save profile' });
-      }
-      res.status(201).json({ message: 'Profile saved successfully' });
-    });
   });
 });
 

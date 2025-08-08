@@ -6,14 +6,14 @@ DROP TABLE IF EXISTS UserCredentials;
 
 
 
-CREATE TABLE UserCredentials (
+CREATE TABLE IF NOT EXISTS UserCredentials (
   id INT AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(100) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   role VARCHAR(20) NOT NULL
 );
 
-CREATE TABLE UserProfile (
+CREATE TABLE IF NOT EXISTS UserProfile (
   id INT AUTO_INCREMENT PRIMARY KEY,
   full_name VARCHAR(100) NOT NULL,
   address1 VARCHAR(255) NOT NULL,
@@ -112,3 +112,4 @@ INSERT INTO States (code, name) VALUES
 SELECT * FROM UserCredentials;
 SELECT * FROM UserProfile;
 
+DESCRIBE UserCredentials;
