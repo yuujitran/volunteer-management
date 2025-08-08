@@ -32,9 +32,6 @@ router.get('/', (req, res) => {
   });
 });
 
-
-module.exports = router;
-
 router.post('/', (req, res) => {
   const {
     email,
@@ -49,7 +46,6 @@ router.post('/', (req, res) => {
     availability
   } = req.body;
 
-  // First get the user ID from the email
   const getUserIdQuery = 'SELECT id, role FROM UserCredentials WHERE email = ?';
   db.query(getUserIdQuery, [email], (err, results) => {
     if (err) return res.status(500).json({ message: 'Failed to fetch user ID' });
@@ -98,3 +94,5 @@ router.post('/', (req, res) => {
     });
   });
 });
+
+module.exports = router;

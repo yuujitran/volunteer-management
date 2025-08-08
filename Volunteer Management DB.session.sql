@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS UserProfile (
   skills TEXT,
   preferences TEXT,
   availability TEXT,
-  user_id INT NOT NULL,
+  user_id INT NOT NULL UNIQUE,  -- 🔥 Make user_id UNIQUE to enable ON DUPLICATE KEY UPDATE
   FOREIGN KEY (user_id) REFERENCES UserCredentials(id)
 );
 
