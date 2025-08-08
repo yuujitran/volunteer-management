@@ -1,11 +1,19 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
 const NotificationBanner = () => {
-  const notifications = [
-    "📢 You have been assigned to the 'Health Camp' event.",
-    "⏰ Reminder: 'Food Drive' starts tomorrow.",
-    "⚠️ Update: 'Education Fair' location has changed.",
-    "✅ Your profile has been successfully updated.",
-  ];
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    axios.get('http://localhost:5000/notifications')
+      .then(res => setNotifications(res.data))
+      .catch(err => {
+        console.error('Failed to fetch notifications:', err);
+        setNotifications([]);
+      });
+  }, []);
+
+  if (notifications.length === 0) return null;
 
   return (
     <div style={{
@@ -18,12 +26,10 @@ const NotificationBanner = () => {
       <strong>🔔 Notifications:</strong>
       <ul style={{ paddingLeft: '1.5rem', marginTop: '0.5rem' }}>
         {notifications.map((note, index) => (
-          <li key={index}>{note}</li>
+          <li key={index}>{note.message || note}</li>
         ))}
       </ul>
-      <div style={{ color:'red', fontWeight:'bold'}}>TEST BANNER: WILL ONLY APPEAR WITH ACTUAL NOTIFICATIONS</div>
     </div>
-    
   );
 };
 
