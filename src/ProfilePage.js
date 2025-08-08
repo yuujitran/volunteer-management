@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
-const API_BASE = 'http://localhost:5000';
+import './ProfilePage.css';
 
+const API_BASE = 'http://localhost:5000';
 
 function ProfilePage() {
   const location = useLocation();
   const navigate = useNavigate();
   const email = location.state?.email || localStorage.getItem('userEmail');
-  const userRole = localStorage.getItem('userRole')
+  const userRole = localStorage.getItem('userRole');
 
   useEffect(() => {
     if (email) {
@@ -32,7 +33,7 @@ function ProfilePage() {
   const skillsOptions = ['Cooking', 'Tutoring', 'Driving', 'Event Setup'];
   const [customSkill, setCustomSkill] = useState('');
   const [statesList, setStatesList] = useState([]);
-  
+
   useEffect(() => {
     axios.get(`${API_BASE}/states`)
       .then(res => setStatesList(res.data))
@@ -62,21 +63,14 @@ function ProfilePage() {
         console.error('Failed to fetch profile:', err);
       });
   };
-  
 
   useEffect(() => {
     fetchProfile();
   }, [email]);
 
-  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleMultiSelect = (e) => {
-    const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
-    setForm(prev => ({ ...prev, skills: selected }));
   };
 
   const handleSkillSelect = (e) => {
@@ -96,7 +90,7 @@ function ProfilePage() {
     if (form.currentDate && !form.availability.includes(form.currentDate)) {
       setForm(prev => ({
         ...prev,
-        availability: [...prev.availability, prev.currentDate],
+        availability: [...prev.availability, form.currentDate],
         currentDate: ''
       }));
     }
@@ -133,7 +127,6 @@ function ProfilePage() {
 
     try {
       const res = await axios.post(`${API_BASE}/profile`, payload);
-
       alert(res.data.message);
       fetchProfile();
     } catch (err) {
@@ -143,48 +136,48 @@ function ProfilePage() {
   };
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
+    <div className="profile-container">
       <h1>User Profile</h1>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Full Name:</label><br />
+          <label>Full Name:</label>
           <input name="fullName" maxLength="50" required value={form.fullName} onChange={handleChange} />
-        </div><br />
+        </div>
 
         <div>
-          <label>Address 1:</label><br />
+          <label>Address 1:</label>
           <input name="address1" maxLength="100" required value={form.address1} onChange={handleChange} />
-        </div><br />
+        </div>
 
         <div>
-          <label>Address 2 (optional):</label><br />
+          <label>Address 2 (optional):</label>
           <input name="address2" maxLength="100" value={form.address2} onChange={handleChange} />
-        </div><br />
+        </div>
 
         <div>
-          <label>City:</label><br />
+          <label>City:</label>
           <input name="city" maxLength="100" required value={form.city} onChange={handleChange} />
-        </div><br />
+        </div>
 
         <div>
-          <label>State:</label><br />
+          <label>State:</label>
           <select name="state" required value={form.state} onChange={handleChange}>
             <option value="">Select a state</option>
-            {statesList && statesList.length > 0 && statesList.map((s) => (
+            {statesList.map((s) => (
               <option key={s.code} value={s.code}>{s.name}</option>
             ))}
           </select>
-        </div><br />
+        </div>
 
         <div>
-          <label>Zip Code:</label><br />
+          <label>Zip Code:</label>
           <input name="zip" pattern="\d{5,9}" required value={form.zip} onChange={handleChange} />
-        </div><br />
-        
+        </div>
+
         {userRole === 'volunteer' && (
           <>
             <div>
-              <label>Skills:</label><br />
+              <label>Skills:</label>
               <select
                 required
                 value={form.skills[0] || ''}
@@ -194,7 +187,7 @@ function ProfilePage() {
                 {[...skillsOptions, ...form.skills.filter(s => !skillsOptions.includes(s))].map(skill => (
                   <option key={skill} value={skill}>{skill}</option>
                 ))}
-              </select><br /><br />
+              </select>
 
               <input
                 type="text"
@@ -203,22 +196,22 @@ function ProfilePage() {
                 onChange={(e) => setCustomSkill(e.target.value)}
               />
               <button type="button" onClick={handleAddSkill}>Add Skill</button>
-            </div><br />
+            </div>
 
             <div>
-              <label>Preferences (optional):</label><br />
+              <label>Preferences (optional):</label>
               <textarea name="preferences" rows="4" cols="40" value={form.preferences} onChange={handleChange}></textarea>
-            </div><br />
+            </div>
 
             <div>
-              <label>Pick a date you're available:</label><br />
+              <label>Pick a date you're available:</label>
               <input
                 type="date"
                 value={form.currentDate}
                 onChange={(e) => setForm({ ...form, currentDate: e.target.value })}
               />
               <button type="button" onClick={handleAddDate}>Add Date</button>
-            </div><br />
+            </div>
 
             <div>
               <label>Availability Dates:</label>

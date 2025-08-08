@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import './LoginPage.css';
 
 function LoginPage({ setIsLoggedIn }) {
   const navigate = useNavigate();
@@ -43,36 +44,33 @@ function LoginPage({ setIsLoggedIn }) {
   };
 
   return (
-    <div style={{ padding: '1rem', fontFamily: 'Arial' }}>
+    <div className="login-container">
       <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email:</label><br />
-          <input 
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            required 
-          />
-        </div>
-        <br />
-        <div>
-          <label>Password:</label><br />
-          <input 
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            required 
-          />
-        </div>
-        <br />
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+      <form className="login-form" onSubmit={handleSubmit}>
+        <label>Email:</label>
+        <input 
+          type="email"
+          name="email"
+          value={form.email}
+          onChange={handleChange}
+          required 
+        />
+
+        <label>Password:</label>
+        <input 
+          type="password"
+          name="password"
+          value={form.password}
+          onChange={handleChange}
+          required 
+        />
+
+        {error && <p className="login-error">{error}</p>}
         <button type="submit">Login</button>
       </form>
-      <hr style={{ margin: '2rem 0' }} />
-      <p style={{ fontWeight: 'bold' }}>Don’t have an account?</p>
+
+      <hr className="login-divider" />
+      <p className="login-register">Don’t have an account?</p>
       <button onClick={() => navigate('/register')}>Register</button>
     </div>
   );

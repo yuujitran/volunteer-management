@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import './RegisterPage.css';
+
 
 function RegisterPage() {
   const [form, setForm] = useState({
@@ -59,9 +61,9 @@ function RegisterPage() {
   };
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
+    <div className="register-container">
       <h1>Register</h1>
-      <form onSubmit={handleSubmit}>
+      <form className="register-form" onSubmit={handleSubmit}>
         <div>
           <label>Email:</label><br />
           <input
@@ -109,7 +111,7 @@ function RegisterPage() {
           </select>
         </div>
         <br />
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p className="register-error">{error}</p>}
         <button type="submit">Register</button>
       </form>
     </div>
