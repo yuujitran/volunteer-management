@@ -10,7 +10,9 @@ CREATE TABLE IF NOT EXISTS UserCredentials (
   id INT AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(100) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
-  role VARCHAR(20) NOT NULL
+  role VARCHAR(20) NOT NULL,
+  is_verified TINYINT(1) DEFAULT 0,
+  verify_token VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS UserProfile (
@@ -24,7 +26,7 @@ CREATE TABLE IF NOT EXISTS UserProfile (
   skills TEXT,
   preferences TEXT,
   availability TEXT,
-  user_id INT NOT NULL UNIQUE,  -- 🔥 Make user_id UNIQUE to enable ON DUPLICATE KEY UPDATE
+  user_id INT NOT NULL UNIQUE,
   FOREIGN KEY (user_id) REFERENCES UserCredentials(id)
 );
 

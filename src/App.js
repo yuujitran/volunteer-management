@@ -14,6 +14,8 @@ import AboutUs from './FooterLinks/AboutUs';
 import Location from './FooterLinks/Location';
 import FAQ from './FooterLinks/FAQ';
 import ContactUs from './FooterLinks/ContactUs';
+import VerifyEmailPage from './VerifyEmail';
+
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -55,6 +57,7 @@ function App() {
         <Route path="/FooterLinks/Location" element={<Location />} />
         <Route path="/FooterLinks/FAQ" element={<FAQ />} />
         <Route path="/FooterLinks/ContactUs" element={<ContactUs />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
       </Routes>
       <Footer />
       </div>

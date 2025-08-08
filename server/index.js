@@ -4,6 +4,9 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const mysql = require('mysql2');
+const crypto = require('crypto');
+const sendVerificationEmail = require('./utils/email');
+
 
 const app = express();
 app.use(cors());
@@ -92,10 +95,18 @@ app.post('/volunteers', async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const insertQuery = 'INSERT INTO UserCredentials (email, password_hash, role) VALUES (?, ?, ?)';
-    db.query(insertQuery, [email, hashedPassword, role], (err, result) => {
+    const verifyToken = crypto.randomBytes(32).toString('hex');
+
+    const insertQuery = 'INSERT INTO UserCredentials (email, password_hash, role, is_verified, verify_token) VALUES (?, ?, ?, ?, ?)';
+    db.query(insertQuery, [email, hashedPassword, role, 0, verifyToken], async (err, result) => {
       if (err) return res.status(500).json({ message: 'Failed to register volunteer' });
-      res.status(201).json({ message: 'User registered successfully', userId: result.insertId });
+      try {
+        await sendVerificationEmail(email, verifyToken);
+        res.status(201).json({ message: 'Registration successful. Check your email to verify your account.', userId: result.insertId });
+      } catch (emailErr) {
+        console.error('Failed to send verification email:', emailErr);
+        res.status(500).json({ message: 'User created, but email verification failed.' });
+      }
     });
   });
 });
@@ -139,6 +150,10 @@ app.post('/login', (req, res) => {
         return res.status(401).json({ message: 'Incorrect password' });
       }
 
+      if (!user.is_verified) {
+        return res.status(403).json({ message: 'Please verify your email before logging in.' });
+      }
+
       res.json({
         message: 'Login successful',
         email: user.email,
@@ -148,8 +163,33 @@ app.post('/login', (req, res) => {
       console.error('Bcrypt compare failed:', error);
       res.status(500).json({ message: 'Incorrect password' });
     }
+
   });
 });
+
+app.get('/verify-email', (req, res) => {
+  const { token } = req.query;
+
+  if (!token) return res.status(400).send('Invalid verification link');
+
+  const query = 'SELECT * FROM UserCredentials WHERE verify_token = ?';
+  db.query(query, [token], (err, results) => {
+    if (err) return res.status(500).send('Database error');
+    if (results.length === 0) return res.status(400).send('Invalid or expired token');
+
+    const update = 'UPDATE UserCredentials SET is_verified = 1, verify_token = NULL WHERE id = ?';
+    db.query(update, [results[0].id], (err2) => {
+      if (err2) return res.status(500).send('Failed to verify email');
+
+      res.send(`
+        <h2>Email Verified!</h2>
+        <p>You can now log in to your account.</p>
+        <a href="http://localhost:3000">Go to Login</a>
+      `);
+    });
+  });
+});
+
 
 
 /* ------------------ START SERVER ------------------ */

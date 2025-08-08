@@ -46,7 +46,7 @@ function RegisterPage() {
     try {
       const res = await axios.post('http://localhost:5000/volunteers', payload);
 
-      alert(res.data.message);
+      alert('Registration successful. Please check your email to verify your account.');
       navigate('/', { state: { email: form.email } });
     } catch (err) {
       console.error('Registration error:', err);
