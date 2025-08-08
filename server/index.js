@@ -95,7 +95,7 @@ app.post('/volunteers', async (req, res) => {
     const insertQuery = 'INSERT INTO UserCredentials (email, password_hash, role) VALUES (?, ?, ?)';
     db.query(insertQuery, [email, hashedPassword, role], (err, result) => {
       if (err) return res.status(500).json({ message: 'Failed to register volunteer' });
-      res.status(201).json({ message: 'Volunteer registered successfully', userId: result.insertId });
+      res.status(201).json({ message: 'User registered successfully', userId: result.insertId });
     });
   });
 });

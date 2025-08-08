@@ -31,12 +31,20 @@ function RegisterPage() {
       return;
     }
 
+    const payload = {
+      email: form.email,
+      password: form.password,
+      role: form.role
+    };
+
+    // Include extra fields only if the role is volunteer
+    if (form.role === 'volunteer') {
+      payload.skills = form.skills;
+      payload.availability = form.availability;
+    }
+
     try {
-      const res = await axios.post('http://localhost:5000/volunteers', {
-        email: form.email,
-        password: form.password,
-        role: form.role
-      });
+      const res = await axios.post('http://localhost:5000/volunteers', payload);
 
       alert(res.data.message);
       navigate('/', { state: { email: form.email } });

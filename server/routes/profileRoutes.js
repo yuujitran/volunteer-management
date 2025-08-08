@@ -50,13 +50,16 @@ router.post('/', (req, res) => {
   } = req.body;
 
   // First get the user ID from the email
-  const getUserIdQuery = 'SELECT id FROM UserCredentials WHERE email = ?';
+  const getUserIdQuery = 'SELECT id, role FROM UserCredentials WHERE email = ?';
   db.query(getUserIdQuery, [email], (err, results) => {
     if (err) return res.status(500).json({ message: 'Failed to fetch user ID' });
 
     if (results.length === 0) return res.status(404).json({ message: 'User not found' });
 
     const userId = results[0].id;
+    const role = results[0].role;
+
+    const isVolunteer = role === 'volunteer';
 
     const insertProfileQuery = `
       INSERT INTO UserProfile 
@@ -82,9 +85,9 @@ router.post('/', (req, res) => {
       city,
       state,
       zip,
-      JSON.stringify(skills),
-      preferences,
-      JSON.stringify(availability)
+      JSON.stringify(skills || null),
+      preferences || null,
+      JSON.stringify(availability || null)
     ], (err, result) => {
       if (err) {
         console.error('Profile insert error:', err);

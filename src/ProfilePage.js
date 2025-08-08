@@ -8,10 +8,11 @@ function ProfilePage() {
   const location = useLocation();
   const navigate = useNavigate();
   const email = location.state?.email || localStorage.getItem('userEmail');
+  const userRole = localStorage.getItem('userRole')
 
   useEffect(() => {
     if (email) {
-      localStorage.setItem('userEmail', email); // persist across refreshes
+      localStorage.setItem('userEmail', email);
     }
   }, [email]);
 
@@ -92,24 +93,39 @@ function ProfilePage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email || !form.fullName || !form.address1 || !form.city || !form.state || !form.zip || form.skills.length === 0 || form.availability.length === 0) {
+    if (!email || !form.fullName || !form.address1 || !form.city || !form.state || !form.zip) {
       alert('Please complete all required fields.');
       return;
     }
+    
+    if (userRole === 'volunteer' && (form.skills.length === 0 || form.availability.length === 0)) {
+      alert('Please complete all required fields (Skills and Availability).');
+    return;
+    }
+
+    if (userRole === 'volunteer' && (form.skills.length === 0 || form.availability.length === 0)) {
+      alert('Please complete all required fields (Skills and Availability).');
+      return;
+    }
+
+    const payload = {
+      email,
+      fullName: form.fullName,
+      address1: form.address1,
+      address2: form.address2,
+      city: form.city,
+      state: form.state,
+      zip: form.zip
+    };
+
+    if (userRole === 'volunteer') {
+      payload.skills = form.skills;
+      payload.preferences = form.preferences;
+      payload.availability = form.availability;
+    }
 
     try {
-      const res = await axios.post(`${API_BASE}/profile`, {
-        email,
-        fullName: form.fullName,
-        address1: form.address1,
-        address2: form.address2,
-        city: form.city,
-        state: form.state,
-        zip: form.zip,
-        skills: form.skills,
-        preferences: form.preferences,
-        availability: form.availability
-      });
+      const res = await axios.post(`${API_BASE}/profile`, payload);
 
       alert(res.data.message);
       fetchProfile();
@@ -157,39 +173,43 @@ function ProfilePage() {
           <label>Zip Code:</label><br />
           <input name="zip" pattern="\d{5,9}" required value={form.zip} onChange={handleChange} />
         </div><br />
+        
+        {userRole === 'volunteer' && (
+          <>
+            <div>
+              <label>Skills:</label><br />
+              <select multiple required value={form.skills} onChange={handleMultiSelect}>
+                {skillsOptions.map((skill) => (
+                  <option key={skill} value={skill}>{skill}</option>
+                ))}
+              </select>
+            </div><br />
 
-        <div>
-          <label>Skills:</label><br />
-          <select multiple required value={form.skills} onChange={handleMultiSelect}>
-            {skillsOptions.map((skill) => (
-              <option key={skill} value={skill}>{skill}</option>
-            ))}
-          </select>
-        </div><br />
+            <div>
+              <label>Preferences (optional):</label><br />
+              <textarea name="preferences" rows="4" cols="40" value={form.preferences} onChange={handleChange}></textarea>
+            </div><br />
 
-        <div>
-          <label>Preferences (optional):</label><br />
-          <textarea name="preferences" rows="4" cols="40" onChange={handleChange}></textarea>
-        </div><br />
+            <div>
+              <label>Pick a date you're available:</label><br />
+              <input
+                type="date"
+                value={form.currentDate}
+                onChange={(e) => setForm({ ...form, currentDate: e.target.value })}
+              />
+              <button type="button" onClick={handleAddDate}>Add Date</button>
+            </div><br />
 
-        <div>
-          <label>Pick a date you're available:</label><br />
-          <input
-            type="date"
-            value={form.currentDate}
-            onChange={(e) => setForm({ ...form, currentDate: e.target.value })}
-          />
-          <button type="button" onClick={handleAddDate}>Add Date</button>
-        </div><br />
-
-        <div>
-          <label>Availability Dates:</label>
-          <ul>
-            {form.availability.map((date, idx) => (
-              <li key={idx}>{date}</li>
-            ))}
-          </ul>
-        </div>
+            <div>
+              <label>Availability Dates:</label>
+              <ul>
+                {form.availability.map((date, idx) => (
+                  <li key={idx}>{date}</li>
+                ))}
+              </ul>
+            </div>
+          </>
+        )}
 
         <button type="submit">Save Profile</button>
       </form>

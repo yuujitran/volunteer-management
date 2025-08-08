@@ -21,9 +21,9 @@ CREATE TABLE IF NOT EXISTS UserProfile (
   city VARCHAR(100) NOT NULL,
   state CHAR(2) NOT NULL,
   zip VARCHAR(10) NOT NULL,
-  skills TEXT NOT NULL,
+  skills TEXT,
   preferences TEXT,
-  availability TEXT NOT NULL,
+  availability TEXT,
   user_id INT NOT NULL,
   FOREIGN KEY (user_id) REFERENCES UserCredentials(id)
 );
