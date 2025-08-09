@@ -1,97 +1,170 @@
 // src/VolunteerHistoryPage.js
 import React, { useEffect, useState } from 'react';
 
+const API = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 export default function VolunteerHistoryPage() {
+  const email = localStorage.getItem('userEmail'); // set at login
+
   const [history, setHistory] = useState([]);
+  const [events, setEvents]   = useState([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
   const [form, setForm] = useState({
     eventId: '',
-    date: '',
+    date: '',        // YYYY-MM-DD
     hours: '',
     role: '',
     notes: ''
   });
-  const [submitting, setSubmitting] = useState(false);
-  const volunteerId = "123"; // Replace with dynamic value as needed
+
+  const safeJson = async (res) => {
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      const text = await res.text();
+      throw new Error(`Expected JSON, got: ${text.slice(0,120)}…`);
+    }
+    return res.json();
+  };
+
+  const loadHistory = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/history/volunteer?email=${encodeURIComponent(email)}`);
+      const data = await safeJson(res);
+      if (!res.ok) throw new Error(data.error || data.message || `Failed (${res.status})`);
+      setHistory(Array.isArray(data) ? data : []);
+    } catch (e) {
+      setError(e.message);
+      setHistory([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadEvents = async () => {
+    try {
+      const res = await fetch(`${API}/events`);
+      const data = await safeJson(res);
+      if (!res.ok) throw new Error(data.error || `Failed (${res.status})`);
+      setEvents(data);
+    } catch (e) {
+      // not fatal for history view
+      console.warn('Failed to load events:', e.message);
+      setEvents([]);
+    }
+  };
 
   useEffect(() => {
-    fetch(`http://localhost:5000/history/${volunteerId}`)
-      .then(res => res.json())
-      .then(data => {
-        setHistory(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [volunteerId]);
+    if (email) {
+      loadHistory();
+      loadEvents();
+    }
+  }, [email]);
 
-  const handleChange = e => {
-    const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
-  };
+  const onChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = async e => {
+  const onSubmit = async (e) => {
     e.preventDefault();
+    if (!form.eventId) return alert('Pick an event');
+
     setSubmitting(true);
-    const newRecord = {
-      volunteerId,
-      eventId: form.eventId,
-      date: form.date,
-      hours: Number(form.hours),
-      role: form.role,
-      notes: form.notes
-    };
+    setError('');
     try {
-      const res = await fetch('http://localhost:5000/history', {
+      const payload = {
+        volunteerEmail: email,
+        eventId: Number(form.eventId),
+        participation_date: form.date || undefined,     // backend defaults to event_date if omitted
+        role: form.role || undefined,
+        hours: form.hours ? Number(form.hours) : undefined,
+        notes: form.notes || undefined                  // only persists if DB has a notes column
+      };
+
+      const res = await fetch(`${API}/history`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newRecord)
+        body: JSON.stringify(payload)
       });
-      if (!res.ok) {
-        const error = await res.json();
-        alert('Error: ' + error.message);
-        setSubmitting(false);
-        return;
-      }
-      const created = await res.json();
-      setHistory(h => [...h, created]);
+      const data = await safeJson(res);
+      if (!res.ok) throw new Error(data.error || data.message || `Failed (${res.status})`);
+
+      await loadHistory(); // keep table in sync with API
       setForm({ eventId: '', date: '', hours: '', role: '', notes: '' });
-    } catch (err) {
-      alert('Network error: ' + err.message);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (!email) return <div>Please log in — no email found.</div>;
+  if (loading) return <div>Loading…</div>;
+
+  const fmt = (d) => (d ? String(d).slice(0, 10) : '');
 
   return (
-    <div>
+    <div style={{ padding: 16 }}>
       <h2>Volunteer History</h2>
-      <form onSubmit={handleSubmit} style={{ marginBottom: 24 }}>
+      <p style={{ opacity: .7 }}>Signed in as: <b>{email}</b></p>
+      {error && <p style={{ color: 'crimson' }}>Error: {error}</p>}
+
+      <form onSubmit={onSubmit} style={{ marginBottom: 24 }}>
         <h3>Add New Record</h3>
+
         <div>
-          <label>Event ID: <input name="eventId" value={form.eventId} onChange={handleChange} required /></label>
+          <label>
+            Event:&nbsp;
+            <select
+              name="eventId"
+              value={form.eventId}
+              onChange={onChange}
+              required
+            >
+              <option value="">-- Select an event --</option>
+              {events.map(ev => (
+                <option key={ev.id} value={ev.id}>
+                  {ev.name} ({fmt(ev.event_date)})
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
+
         <div>
-          <label>Date: <input name="date" type="date" value={form.date} onChange={handleChange} required /></label>
+          <label>Date: <input name="date" type="date" value={form.date} onChange={onChange} /></label>
+          <small style={{ marginLeft: 8, opacity: .7 }}>
+            Leave blank to use the event date
+          </small>
         </div>
+
         <div>
-          <label>Hours: <input name="hours" type="number" min="0.5" max="24" step="0.5" value={form.hours} onChange={handleChange} required /></label>
+          <label>Hours: <input name="hours" type="number" min="0" step="0.5" value={form.hours} onChange={onChange} /></label>
         </div>
+
         <div>
-          <label>Role: <input name="role" value={form.role} maxLength={50} onChange={handleChange} required /></label>
+          <label>Role: <input name="role" maxLength={50} value={form.role} onChange={onChange} placeholder="Volunteer" /></label>
         </div>
+
         <div>
-          <label>Notes: <input name="notes" value={form.notes} maxLength={200} onChange={handleChange} /></label>
+          <label>Notes: <input name="notes" maxLength={200} value={form.notes} onChange={onChange} /></label>
         </div>
-        <button type="submit" disabled={submitting}>{submitting ? 'Submitting...' : 'Add Record'}</button>
+
+        <button type="submit" disabled={submitting || !form.eventId}>
+          {submitting ? 'Submitting…' : 'Add Record'}
+        </button>
       </form>
+
       {history.length === 0 ? (
         <p>No history records found.</p>
       ) : (
-        <table>
+        <table border="1" cellPadding="6" style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
               <th>Date</th>
+              <th>Event</th>
               <th>Event ID</th>
               <th>Hours</th>
               <th>Role</th>
@@ -99,13 +172,14 @@ export default function VolunteerHistoryPage() {
             </tr>
           </thead>
           <tbody>
-            {history.map(record => (
-              <tr key={record.id}>
-                <td>{record.date}</td>
-                <td>{record.eventId}</td>
-                <td>{record.hours}</td>
-                <td>{record.role}</td>
-                <td>{record.notes}</td>
+            {history.map(r => (
+              <tr key={r.id}>
+                <td>{fmt(r.participation_date)}</td>
+                <td>{r.eventName}</td>
+                <td>{r.eventId}</td>
+                <td>{r.hours ?? 0}</td>
+                <td>{r.role || 'Volunteer'}</td>
+                <td>{r.notes ?? ''}</td>
               </tr>
             ))}
           </tbody>
