@@ -3,9 +3,16 @@ import React, { useState, useEffect } from 'react';
 import './EventManagementFormLayout.css';
 import { useNavigate } from 'react-router-dom';
 
+// Use numeric urgency values (1..5)
+const urgencyOptions = [
+  { label: 'Low', value: 2 },
+  { label: 'Medium', value: 3 },
+  { label: 'High', value: 5 },
+];
 
-const skillsOptions = [ 'Cooking','Tutoring','Driving','Event Setup' ];
-const urgencyOptions = [ 'Low','Medium','High' ];
+// If you only want a single skill, keep this list.
+// If you want multiple, switch back to <select multiple> or a text/textarea parser.
+const skillsOptions = ['Cooking', 'Tutoring', 'Driving', 'Event Setup'];
 
 export default function EventManagementPage() {
   const navigate = useNavigate();
@@ -13,7 +20,7 @@ export default function EventManagementPage() {
   useEffect(() => {
     const role = localStorage.getItem('userRole');
     if (role !== 'admin') {
-      alert('Access denied: Adminstrators only');
+      alert('Access denied: Administrators only');
       navigate('/profile');
     }
   }, [navigate]);
@@ -22,52 +29,50 @@ export default function EventManagementPage() {
     eventName: '',
     eventDescription: '',
     location: '',
-    requiredSkills: [],
-    urgency: '',
-    eventDate: ''
+    requiredSkills: [],   // must be an array for backend
+    urgency: '',          // will hold the numeric value as a string, e.g. "3"
+    eventDate: '',
+    stateCode: ''         // optional (e.g., "TX")
   });
 
-  const handleChange = ({ target }) => {
-    const { name, value } = target;
+  const handleChange = ({ target: { name, value } }) =>
     setForm(f => ({ ...f, [name]: value }));
-  };
 
-  const handleMulti = ({ target }) => {
-    const values = Array.from(target.selectedOptions).map(o => o.value);
-    setForm(f => ({ ...f, requiredSkills: values }));
-  };
+  // Single-skill select -> keep array shape
+  const handleSkill = (e) =>
+    setForm(f => ({ ...f, requiredSkills: e.target.value ? [e.target.value] : [] }));
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Map frontend form to backend fields
     const eventData = {
       name: form.eventName,
-      details: form.eventDescription,
+      description: form.eventDescription,        // ✅ correct key
       location: form.location,
-      requiredSkills: form.requiredSkills,
-      urgency: form.urgency.toLowerCase(), // backend expects 'low', 'medium', 'high'
-      // eventDate: form.eventDate, // not used in backend yet
+      requiredSkills: form.requiredSkills,       // ✅ array
+      urgency: Number(form.urgency),             // ✅ number 1..5
+      event_date: form.eventDate,                // ✅ snake_case + YYYY-MM-DD
+      stateCode: form.stateCode || null          // optional
     };
 
     try {
-      const res = await fetch('http://localhost:5000/events', {
+      const res = await fetch('/events', {       // use CRA proxy or set REACT_APP_API_URL
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(eventData),
       });
 
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const error = await res.json();
-        alert('Error: ' + error.message);
-        return;
+        throw new Error(data.error || data.message || `Failed (${res.status})`);
       }
 
-      const data = await res.json();
-      alert('Event created: ' + data.name);
-      // Optionally reset form or update event list here
+      alert(`Event created: ${data.name}`);
+      // Reset form if you want
+      // setForm({ eventName:'', eventDescription:'', location:'', requiredSkills:[], urgency:'', eventDate:'', stateCode:'' });
     } catch (err) {
-      alert('Network error: ' + err.message);
+      console.error('Create event failed:', err);
+      alert(err.message);
     }
   };
 
@@ -77,84 +82,54 @@ export default function EventManagementPage() {
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="eventName">Event Name</label>
-          <input
-            id="eventName"
-            name="eventName"
-            type="text"
-            maxLength={100}
-            required
-            value={form.eventName}
-            onChange={handleChange}
-          />
+          <input id="eventName" name="eventName" required maxLength={100}
+                 value={form.eventName} onChange={handleChange}/>
         </div>
 
         <div className="form-group">
           <label htmlFor="eventDescription">Event Description</label>
-          <textarea
-            id="eventDescription"
-            name="eventDescription"
-            rows={4}
-            required
-            value={form.eventDescription}
-            onChange={handleChange}
-          />
+          <textarea id="eventDescription" name="eventDescription" rows={4} required
+                    value={form.eventDescription} onChange={handleChange}/>
         </div>
 
         <div className="form-group">
           <label htmlFor="location">Location</label>
-          <textarea
-            id="location"
-            name="location"
-            rows={2}
-            required
-            value={form.location}
-            onChange={handleChange}
-          />
+          <textarea id="location" name="location" rows={2} required
+                    value={form.location} onChange={handleChange}/>
         </div>
 
         <div className="form-group">
-          <label htmlFor="requiredSkills">Required Skills</label>
-          <select
-            id="requiredSkills"
-            name="requiredSkills"
-            multiple
-            required
-            value={form.requiredSkills}
-            onChange={handleMulti}
-          >
-            {skillsOptions.map(skill => (
-              <option key={skill} value={skill}>{skill}</option>
-            ))}
+          <label htmlFor="requiredSkills">Required Skill</label>
+          <select id="requiredSkills" name="requiredSkills" required
+                  value={form.requiredSkills[0] || ''} onChange={handleSkill}>
+            <option value="">--Select a skill--</option>
+            {skillsOptions.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
 
         <div className="form-group">
           <label htmlFor="urgency">Urgency</label>
-          <select
-            id="urgency"
-            name="urgency"
-            required
-            value={form.urgency}
-            onChange={handleChange}
-          >
+          <select id="urgency" name="urgency" required
+                  value={form.urgency} onChange={handleChange}>
             <option value="" disabled>Pick urgency</option>
             {urgencyOptions.map(u => (
-              <option key={u} value={u}>{u}</option>
+              <option key={u.label} value={u.value}>{u.label}</option>
             ))}
           </select>
         </div>
 
         <div className="form-group">
           <label htmlFor="eventDate">Event Date</label>
-          <input
-            id="eventDate"
-            name="eventDate"
-            type="date"
-            required
-            value={form.eventDate}
-            onChange={handleChange}
-          />
+          <input id="eventDate" name="eventDate" type="date" required
+                 value={form.eventDate} onChange={handleChange}/>
         </div>
+
+        {/* Optional state code */}
+        {/* <div className="form-group">
+          <label htmlFor="stateCode">State</label>
+          <input id="stateCode" name="stateCode" maxLength={2}
+                 value={form.stateCode} onChange={handleChange}/>
+        </div> */}
 
         <button type="submit" className="button">Save Event</button>
       </form>
