@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendVerificationEmail = (to, token) => {
-  const verificationUrl = `http://localhost:3000/verify-email?token=${token}`;
+  const verificationUrl = `http://localhost:5000/verify-email?token=${token}`;
   const mailOptions = {
     from: `"Volunteer App" <${process.env.EMAIL_USER}>`,
     to,

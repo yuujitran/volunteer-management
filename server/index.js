@@ -184,11 +184,7 @@ app.get('/verify-email', (req, res) => {
     const update = 'UPDATE UserCredentials SET is_verified = 1, verify_token = NULL WHERE id = ?';
     db.query(update, [results[0].id], (err2) => {
       if (err2) return res.status(500).send('Failed to verify email');
-      res.send(`
-        <h2>Email Verified!</h2>
-        <p>You can now log in to your account.</p>
-        <a href="http://localhost:3000">Go to Login</a>
-      `);
+      res.redirect('http://localhost:3000');
     });
   });
 });
