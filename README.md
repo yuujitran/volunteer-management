@@ -25,6 +25,16 @@ This will take you to http://localhost:3000/
 Now you can Use the application as if you're an administrator / volunteer
 
 
-Use a real email, and register using that email, shortly after registering, you'll be given a link to your email to verify your account, after you've verified your account, you can now freely use the volunteer management application
-
 As an administrator you can access all pages, and only administrators can create events, assign volunteers to events (Manual volunteer matching), and remove volunteers from events
+
+
+Dependencies
+
+npm install react react-dom react-router-dom
+npm install axios
+npm install dotenv
+npm install express cors mysql2 bcryptjs dotenv crypto nodemailer
+
+
+npm install axios dayjs
+npm install express cors dotenv mysql2 bcrypt
