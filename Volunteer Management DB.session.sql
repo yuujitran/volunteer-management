@@ -54,6 +54,18 @@ CREATE TABLE IF NOT EXISTS VolunteerHistory (
   FOREIGN KEY (event_id) REFERENCES EventDetails(id) ON DELETE CASCADE
 );
 
+-- AssignedEvents table
+CREATE TABLE IF NOT EXISTS assigned_events (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  event_id BIGINT NOT NULL,
+  volunteer_id BIGINT NOT NULL,
+  assigned_by BIGINT NOT NULL,
+  assigned_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  status ENUM('assigned','confirmed','declined','completed','no_show') NOT NULL DEFAULT 'assigned',
+  notes VARCHAR(500) NULL,
+  CONSTRAINT uq_event_vol UNIQUE (event_id, volunteer_id)
+);
+
 CREATE TABLE IF NOT EXISTS States (
   code CHAR(2) PRIMARY KEY,
   name VARCHAR(100) NOT NULL
