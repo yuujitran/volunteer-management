@@ -1,7 +1,7 @@
-To use application
+To use Volunteer Management Application!
 
 
-Download Repository
+Download Repository zip file
 
 
 Unzip File
