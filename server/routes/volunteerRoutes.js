@@ -1,65 +1,58 @@
+// routes/volunteerRoutes.js
 const express = require('express');
 const router = express.Router();
-const mysql = require('mysql2');
+const db = require('../index').db;
 
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT
-});
+// GET /volunteers  (?search= optional)
+router.get('/', async (req, res) => {
+  const { search = '' } = req.query;
+  const like = `%${search.trim()}%`;
 
-router.get('/volunteers', async (req, res) => {
   try {
-    const [rows] = await db.promise().query(`
-      SELECT 
-        up.id,
-        up.full_name,
-        up.skills,
-        up.availability
-      FROM UserProfile up
-      JOIN UserCredentials uc ON up.user_id = uc.id
-      WHERE uc.role = 'volunteer'
-    `);
+    const [rows] = await db
+      .promise()
+      .query(
+        `
+        SELECT
+          up.user_id            AS id,          -- <-- use profile.user_id as the volunteer id
+          up.full_name,
+          up.skills,
+          up.availability,
+          uc.email
+        FROM userprofile up
+        LEFT JOIN usercredentials uc ON uc.id = up.user_id
+        ${search
+          ? `WHERE (up.full_name LIKE ? OR up.skills LIKE ? OR uc.email LIKE ?)`
+          : ''}
+        ORDER BY COALESCE(up.full_name, uc.email) ASC
+        `,
+        search ? [like, like, like] : []
+      );
 
-    const volunteers = rows.map(v => ({
-      id: v.id,
-      name: v.full_name,
-      skills: v.skills.split(',').map(s => s.trim()),
-      availability: v.availability.split(',').map(d => d.trim())
-    }));
+    // normalize for UI
+    const out = rows.map((r) => {
+      // skills may be JSON or CSV
+      let skills = [];
+      if (Array.isArray(r.skills)) skills = r.skills;
+      else if (typeof r.skills === 'string' && r.skills.trim()) {
+        try { skills = JSON.parse(r.skills); }
+        catch { skills = r.skills.split(',').map(s => s.trim()).filter(Boolean); }
+      }
+      return {
+        id: r.id,                       // userprofile.user_id
+        name: r.full_name || null,
+        first_name: r.full_name ? r.full_name.split(' ')[0] : null,
+        last_name: r.full_name ? r.full_name.split(' ').slice(1).join(' ') || null : null,
+        email: r.email || null,         // from usercredentials (optional)
+        skills,
+        availability: r.availability || null,
+      };
+    });
 
-    res.json(volunteers);
-  } catch (err) {
-    console.error('Error fetching volunteers:', err);
-    res.status(500).json({ message: 'Error fetching volunteers' });
-  }
-});
-
-// GET all events
-router.get('/events', async (req, res) => {
-  try {
-    const [rows] = await db.promise().query(`
-      SELECT 
-        id,
-        name,
-        required_skills,
-        event_date
-      FROM EventDetails
-    `);
-
-    const events = rows.map(e => ({
-      id: e.id,
-      name: e.name,
-      requiredSkills: e.required_skills ? e.required_skills.split(',').map(s => s.trim()) : [],
-      eventDate: e.event_date
-    }));
-
-    res.json(events);
-  } catch (err) {
-    console.error('Error fetching events:', err);
-    res.status(500).json({ message: 'Error fetching events' });
+    res.json(out);
+  } catch (e) {
+    console.error('GET /volunteers error:', e);
+    res.status(500).json({ error: 'Failed to load volunteers' });
   }
 });
 
